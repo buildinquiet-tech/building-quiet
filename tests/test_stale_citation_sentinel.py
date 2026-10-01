@@ -13,7 +13,7 @@ import time
 import unittest
 from pathlib import Path
 
-HOOK = Path(__file__).parent / "stale-citation-sentinel.py"
+HOOK = Path(__file__).resolve().parent.parent / "hooks" / "stale-citation-sentinel.py"
 
 
 def run_hook(payload: dict, project_dir: str, env_override: dict = None) -> tuple[int, str]:

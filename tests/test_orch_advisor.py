@@ -9,12 +9,13 @@ from __future__ import annotations
 import json
 import os
 import subprocess
+import tempfile
 import sys
 from pathlib import Path
 
 import pytest
 
-HOOK = Path(__file__).resolve().parent / "orch-advisor.py"
+HOOK = Path(__file__).resolve().parent.parent / "hooks" / "orch-advisor.py"
 PYTHON = sys.executable
 
 
@@ -22,12 +23,28 @@ PYTHON = sys.executable
 # Helpers
 # ---------------------------------------------------------------------------
 
+# The hook appends every advisory fire to ~/.echo/state/orch-advisor-fires.jsonl.
+# Give each hook subprocess a throwaway HOME so the suite never writes into the
+# real home directory of whoever runs it.
+_HOME_TMP = tempfile.TemporaryDirectory(prefix="orch-advisor-test-home-")
+
+
+def teardown_module():
+    _HOME_TMP.cleanup()
+
+
+def _isolated_env() -> dict[str, str]:
+    env = os.environ.copy()
+    env["HOME"] = _HOME_TMP.name
+    return env
+
+
 def run_hook(
     payload: dict,
     env_extra: dict[str, str] | None = None,
     fire_log_path: Path | None = None,
 ) -> subprocess.CompletedProcess:
-    env = os.environ.copy()
+    env = _isolated_env()
     env.pop("SENTINEL_OVERRIDE", None)
     env.pop("ECHO_ROUTING_REASON", None)
     if env_extra:
@@ -148,6 +165,7 @@ def test_invalid_json_exits_zero():
         input="NOT JSON {{{{",
         capture_output=True,
         text=True,
+        env=_isolated_env(),
     )
     assert result.returncode == 0
 
@@ -224,6 +242,7 @@ def test_fail_open_on_exception(tmp_path: Path):
         input=json.dumps(payload),
         capture_output=True,
         text=True,
+        env=_isolated_env(),
     )
     assert result.returncode == 0
 

@@ -6,14 +6,26 @@ import json
 import os
 import subprocess
 import sys
+import tempfile
 import unittest
 import uuid
 from pathlib import Path
 
 # Define paths relative to the test script's location
-REPO = Path(__file__).resolve().parents[2]
-HOOK = REPO / ".claude" / "hooks" / "storyboard-entry-sentinel.py"
-LOG_FILE = REPO / ".claude" / "hooks" / "storyboard-entry-log.jsonl"
+REPO = Path(__file__).resolve().parents[1]
+HOOK = REPO / "hooks" / "storyboard-entry-sentinel.py"
+
+# The hook resolves storyboard paths against $CLAUDE_PROJECT_DIR and logs to
+# $CLAUDE_PROJECT_DIR/.claude/hooks/storyboard-entry-log.jsonl (its installed
+# location). Point it at a throwaway project so tests never write into this
+# repo, or into whatever directory sits above hooks/ when the var is unset.
+_PROJECT_TMP = tempfile.TemporaryDirectory(prefix="storyboard-entry-test-")
+PROJECT = Path(_PROJECT_TMP.name)
+LOG_FILE = PROJECT / ".claude" / "hooks" / "storyboard-entry-log.jsonl"
+
+
+def tearDownModule():
+    _PROJECT_TMP.cleanup()
 
 
 def run_hook(
@@ -21,6 +33,7 @@ def run_hook(
 ) -> tuple[int, str, str]:
     """Runs the hook as a subprocess with the given payload and environment."""
     env = {**os.environ}
+    env["CLAUDE_PROJECT_DIR"] = str(PROJECT)
     if extra_env:
         env.update(extra_env)
 
@@ -146,8 +159,8 @@ body"""
 
     def test_existing_file_passes(self):
         path_str = self._make_path("drafts/scheduled")
-        tmp_file_path = REPO / path_str
-        (REPO / "drafts" / "scheduled").mkdir(parents=True, exist_ok=True)
+        tmp_file_path = PROJECT / path_str
+        (PROJECT / "drafts" / "scheduled").mkdir(parents=True, exist_ok=True)
         tmp_file_path.touch()
         try:
             bad_content = "---\nclone_source: ''\n---\nbody"

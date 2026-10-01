@@ -17,7 +17,7 @@ try:
 except ImportError:
     from backports.zoneinfo import ZoneInfo
 
-HOOK_PATH = Path(__file__).resolve().parent / "cfo-subscription-delta-sentinel.py"
+HOOK_PATH = Path(__file__).resolve().parent.parent / "hooks" / "cfo-subscription-delta-sentinel.py"
 TIMEZONE = ZoneInfo("America/Los_Angeles")
 
 

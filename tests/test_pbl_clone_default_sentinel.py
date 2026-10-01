@@ -1,10 +1,11 @@
 #!/usr/bin/env python3
 """Unit tests for pbl-clone-default-sentinel.py.
 
-Run: python3 -m unittest .claude/hooks/test_pbl_clone_default_sentinel.py
+Run: python3 -m pytest tests/test_pbl_clone_default_sentinel.py
 """
 import json
 import os
+import shutil
 import subprocess
 import sys
 import tempfile
@@ -12,10 +13,24 @@ import unittest
 from datetime import datetime, timedelta
 
 
-HOOK_PATH = os.path.join(
-    os.path.dirname(os.path.abspath(__file__)),
+SOURCE_HOOK = os.path.join(
+    os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "hooks",
     "pbl-clone-default-sentinel.py",
 )
+
+# The hook appends its fire log next to itself (its installed home is
+# <project>/.claude/hooks/). Run a copy from a throwaway .claude/hooks/ so the
+# tests never leave a log file inside this repo's hooks/ directory.
+_TMP = tempfile.TemporaryDirectory(prefix="pbl-clone-default-test-")
+_HOOK_DIR = os.path.join(_TMP.name, ".claude", "hooks")
+os.makedirs(_HOOK_DIR)
+HOOK_PATH = os.path.join(_HOOK_DIR, "pbl-clone-default-sentinel.py")
+shutil.copy2(SOURCE_HOOK, HOOK_PATH)
+FIRE_LOG = os.path.join(_HOOK_DIR, "pbl-clone-default-sentinel-fire-log.jsonl")
+
+
+def tearDownModule():
+    _TMP.cleanup()
 
 
 def fire(payload: dict, env_override: str = "") -> tuple[int, str, str]:
@@ -161,8 +176,7 @@ class TestPblCloneDefaultSentinel(unittest.TestCase):
     def test_09_legacy_file_carve_out(self):
         """Real file with mtime BEFORE 2026-05-09 is legacy-exempt."""
         with tempfile.NamedTemporaryFile(
-            mode="w", suffix=".md", delete=False,
-            dir=os.path.dirname(os.path.abspath(__file__)),
+            mode="w", suffix=".md", delete=False, dir=_TMP.name,
         ) as f:
             f.write("---\ntitle: legacy\n---\nbody")
             tmp_path = f.name
@@ -172,10 +186,7 @@ class TestPblCloneDefaultSentinel(unittest.TestCase):
             os.utime(tmp_path, (ts, ts))
 
             # Rename to a storyboard-like path so it's watched
-            storyboard_dir = os.path.join(
-                os.path.dirname(os.path.abspath(__file__)),
-                "..", "..", "drafts", "storyboard",
-            )
+            storyboard_dir = os.path.join(_TMP.name, "drafts", "storyboard")
             os.makedirs(storyboard_dir, exist_ok=True)
             target = os.path.join(storyboard_dir, "legacy-test.md")
             os.rename(tmp_path, target)

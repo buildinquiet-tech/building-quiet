@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """Unit tests for claim-provenance-sentinel.py Stop hook.
 
-Run: python3 .claude/hooks/test_claim_provenance_sentinel.py
+Run: python3 -m pytest tests/test_claim_provenance_sentinel.py
 """
 
 from __future__ import annotations
@@ -14,9 +14,25 @@ import tempfile
 import unittest
 from pathlib import Path
 
-REPO = Path(__file__).resolve().parents[2]
-HOOK = REPO / ".claude" / "hooks" / "claim-provenance-sentinel.py"
-SENTINEL_DIR = REPO / "echo" / "sentinel"
+REPO = Path(__file__).resolve().parents[1]
+HOOK = REPO / "hooks" / "claim-provenance-sentinel.py"
+
+# The hook writes its report under $CLAUDE_PROJECT_DIR/echo/sentinel/. Point
+# that at a throwaway project dir so tests never write into the repo (or into
+# whatever directory happens to sit two levels above hooks/).
+_PROJECT_TMP = tempfile.TemporaryDirectory(prefix="claim-provenance-test-")
+PROJECT_DIR = Path(_PROJECT_TMP.name)
+SENTINEL_DIR = PROJECT_DIR / "echo" / "sentinel"
+
+
+def tearDownModule():
+    _PROJECT_TMP.cleanup()
+
+
+def _hook_env() -> dict:
+    env = {**os.environ}
+    env["CLAUDE_PROJECT_DIR"] = str(PROJECT_DIR)
+    return env
 
 
 def _make_transcript(assistant_text: str) -> Path:
@@ -37,7 +53,7 @@ def _today_report() -> Path:
 
 def run_hook(assistant_text: str, extra_env: dict | None = None) -> tuple[int, str, str]:
     transcript = _make_transcript(assistant_text)
-    env = {**os.environ}
+    env = _hook_env()
     if extra_env:
         env.update(extra_env)
     else:
@@ -179,7 +195,7 @@ class TestClaimProvenanceSentinel(unittest.TestCase):
         """When stop_hook_active=True (continuation), don't re-fire."""
         transcript = _make_transcript("queue: 7 PENDING")
         try:
-            env = {**os.environ}
+            env = _hook_env()
             env.pop("SENTINEL_OVERRIDE", None)
             result = subprocess.run(
                 ["python3", str(HOOK)],
@@ -195,7 +211,7 @@ class TestClaimProvenanceSentinel(unittest.TestCase):
             transcript.unlink(missing_ok=True)
 
     def test_empty_transcript_path_skips(self):
-        env = {**os.environ}
+        env = _hook_env()
         env.pop("SENTINEL_OVERRIDE", None)
         result = subprocess.run(
             ["python3", str(HOOK)],

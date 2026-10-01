@@ -23,8 +23,8 @@ from pathlib import Path
 from types import SimpleNamespace
 from unittest.mock import patch
 
-REPO = Path(__file__).resolve().parents[2]
-HOOK = REPO / ".claude" / "hooks" / "closing-integrity-sentinel.py"
+REPO = Path(__file__).resolve().parents[1]
+HOOK = REPO / "hooks" / "closing-integrity-sentinel.py"
 
 
 def _load_sentinel():

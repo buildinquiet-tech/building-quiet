@@ -12,7 +12,7 @@ from unittest.mock import MagicMock, patch
 
 # Load the hyphenated module via importlib (filename: claim-provenance-sentinel.py)
 import importlib.util
-HOOK_DIR = Path(__file__).resolve().parent
+HOOK_DIR = Path(__file__).resolve().parent.parent / "hooks"
 _spec = importlib.util.spec_from_file_location(
     "claim_provenance_sentinel",
     HOOK_DIR / "claim-provenance-sentinel.py",
@@ -23,7 +23,7 @@ _spec.loader.exec_module(sentinel)
 
 class TestClaimProvenanceSentinelV2(unittest.TestCase):
     def setUp(self):
-        """Set up a temporary directory. Today IS 2026-05-13, no date mock needed."""
+        """Set up a temporary directory standing in for the project root."""
         self.temp_dir = tempfile.TemporaryDirectory()
         self.temp_dir_path = Path(self.temp_dir.name)
         self.repo_patcher = patch.object(sentinel, 'REPO', self.temp_dir_path)
@@ -64,7 +64,10 @@ class TestClaimProvenanceSentinelV2(unittest.TestCase):
         findings = sentinel._find_unsupported_claims(text)
         self.assertEqual(len(findings), 0)
 
-    @unittest.expectedFailure
+    # Was @expectedFailure under the S347 overlap limitation above. The
+    # state detector does not overlap revenue_dollar_claim (no dollar figure
+    # in this text), and the hook now returns exactly one UNSUPPORTED finding,
+    # so the marker was stale and pytest reported an unexpected success.
     def test_new_detector_subscription_state_fires(self):
         """Test that `subscription_state_claim` fires on an unsupported claim."""
         text = "The status is now CANCELLED per our discussion."
@@ -75,7 +78,12 @@ class TestClaimProvenanceSentinelV2(unittest.TestCase):
 
     def test_new_detector_subscription_state_passes_with_citation(self):
         """Test that `subscription_state_claim` passes with a valid citation."""
-        text = "The status is now CANCELLED per decision D-2026-05-123."
+        # The hook's "this month's decisions" anchor is built from the real
+        # current month at import time (D-YYYY-MM-NNN). The original fixture
+        # hard-coded D-2026-05-123, which only matched while the calendar
+        # read May 2026. Build the ID from today so the test checks the anchor
+        # rather than the date it was written.
+        text = f"The status is now CANCELLED per decision D-{dt.date.today():%Y-%m}-123."
         findings = sentinel._find_unsupported_claims(text)
         self.assertEqual(len(findings), 0)
 
@@ -101,7 +109,8 @@ class TestClaimProvenanceSentinelV2(unittest.TestCase):
     def test_freshness_check_passes_with_stale_file_and_date_anchor(self):
         """Test that a stale file is accepted if today's date is an anchor."""
         self._create_mock_file('subscription-audit.md', age_days=10)
-        text = "As of 2026-05-13, we are keeping the Anthropic $55/mo sub (see subscription-audit.md for history)."
+        text = (f"As of {dt.date.today().isoformat()}, we are keeping the Anthropic $55/mo sub "
+                "(see subscription-audit.md for history).")
         findings = sentinel._find_unsupported_claims(text)
         self.assertEqual(len(findings), 0)
 

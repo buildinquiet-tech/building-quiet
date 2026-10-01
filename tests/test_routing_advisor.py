@@ -20,8 +20,8 @@ import time
 import unittest
 from pathlib import Path
 
-REPO = Path(__file__).resolve().parents[2]
-HOOK = REPO / ".claude" / "hooks" / "routing-advisor.py"
+REPO = Path(__file__).resolve().parents[1]
+HOOK = REPO / "hooks" / "routing-advisor.py"
 
 # Import the hook module for direct unit testing of fingerprint internals.
 _spec = importlib.util.spec_from_file_location("routing_advisor_mod", HOOK)

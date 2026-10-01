@@ -21,8 +21,8 @@ import tempfile
 import unittest
 from pathlib import Path
 
-REPO = Path(__file__).resolve().parents[2]
-HOOK = REPO / ".claude" / "hooks" / "bulk-burn-tracker.py"
+REPO = Path(__file__).resolve().parents[1]
+HOOK = REPO / "hooks" / "bulk-burn-tracker.py"
 
 
 def write_transcript(path: Path, tool_events: list[dict]) -> None:

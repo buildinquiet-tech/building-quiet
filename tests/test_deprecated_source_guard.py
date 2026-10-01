@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """Unit tests for deprecated-source-guard.py PreToolUse hook.
 
-Run: python3 .claude/hooks/test_deprecated_source_guard.py
+Run: python3 -m pytest tests/test_deprecated_source_guard.py
 """
 
 from __future__ import annotations
@@ -10,16 +10,55 @@ import json
 import os
 import subprocess
 import sys
+import tempfile
 import unittest
 from pathlib import Path
 
-REPO = Path(__file__).resolve().parents[2]
-HOOK = REPO / ".claude" / "hooks" / "deprecated-source-guard.py"
+REPO = Path(__file__).resolve().parents[1]
+HOOK = REPO / "hooks" / "deprecated-source-guard.py"
+
+# The hook reads $CLAUDE_PROJECT_DIR/docs/_active/source-registry.yml and logs
+# to $CLAUDE_PROJECT_DIR/.claude/hooks/deprecated-read-log.json. The registry
+# is project data, not part of this repo, so the tests build a throwaway
+# project with a fixture registry instead of depending on one existing two
+# directories above hooks/.
+_PROJECT_TMP = tempfile.TemporaryDirectory(prefix="deprecated-source-guard-test-")
+PROJECT = Path(_PROJECT_TMP.name)
+LOG_PATH = PROJECT / ".claude" / "hooks" / "deprecated-read-log.json"
+
+FIXTURE_REGISTRY = """\
+version: 1
+sources:
+  memory/carryover-tracker.md:
+    grade: DEPRECATED
+    deprecated_since: 2026-04-14
+    superseded_by:
+      - memory/active-work.md
+      - memory/backlog.md
+    note: Split into active-work.md and backlog.md.
+  memory/active-work.md:
+    grade: CANONICAL
+  memory/backlog.md:
+    grade: CANONICAL
+  memory/graveyard.md:
+    grade: ADVISORY
+"""
+
+
+def setUpModule():
+    registry = PROJECT / "docs" / "_active" / "source-registry.yml"
+    registry.parent.mkdir(parents=True, exist_ok=True)
+    registry.write_text(FIXTURE_REGISTRY, encoding="utf-8")
+
+
+def tearDownModule():
+    _PROJECT_TMP.cleanup()
 
 
 def run_hook(payload: dict, extra_env: dict | None = None) -> tuple[int, str, str]:
     """Invoke the hook with a payload, return (rc, stdout, stderr)."""
     env = {**os.environ}
+    env["CLAUDE_PROJECT_DIR"] = str(PROJECT)
     if extra_env:
         env.update(extra_env)
     # Clear any inherited reason var unless caller sets it
@@ -135,7 +174,7 @@ class TestDeprecatedSourceGuard(unittest.TestCase):
 
     def test_absolute_path_resolves(self):
         """Absolute paths should resolve to repo-relative and apply rule."""
-        abs_path = str(REPO / "memory" / "carryover-tracker.md")
+        abs_path = str(PROJECT / "memory" / "carryover-tracker.md")
         rc, _, err = run_hook({
             "tool_name": "Read",
             "tool_input": {"file_path": abs_path},
@@ -155,6 +194,7 @@ class TestDeprecatedSourceGuard(unittest.TestCase):
             input="not-valid-json",
             capture_output=True,
             text=True,
+            env={**os.environ, "CLAUDE_PROJECT_DIR": str(PROJECT)},
         )
         self.assertEqual(result.returncode, 0)
 
@@ -168,7 +208,7 @@ class TestDeprecatedSourceGuard(unittest.TestCase):
 
     def test_log_written_on_block(self):
         """Block should append to deprecated-read-log.json."""
-        log_path = REPO / ".claude" / "hooks" / "deprecated-read-log.json"
+        log_path = LOG_PATH
         if log_path.exists():
             log_path.unlink()
         run_hook({
@@ -183,7 +223,7 @@ class TestDeprecatedSourceGuard(unittest.TestCase):
 
     def test_log_written_on_bypass(self):
         """Bypass should append to log with reason field."""
-        log_path = REPO / ".claude" / "hooks" / "deprecated-read-log.json"
+        log_path = LOG_PATH
         if log_path.exists():
             log_path.unlink()
         run_hook(

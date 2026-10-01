@@ -45,7 +45,11 @@ See: docs/superpowers/specs/2026-05-24-S373-storyboard-entry-sentinel.md
 def get_repo_root() -> Path:
     """Determine the repository root from env var or script location."""
     if project_dir := os.environ.get("CLAUDE_PROJECT_DIR"):
-        return Path(project_dir)
+        # Resolve so relative_to() below compares like with like: file paths
+        # are resolve()d, so an unresolved root behind a symlink (e.g. macOS
+        # /var -> /private/var, or a symlinked checkout) made every in-scope
+        # path look "outside the repo" and the hook silently allowed it.
+        return Path(project_dir).resolve()
     # Fallback: .claude/hooks/storyboard-entry-sentinel.py -> ../../..
     return Path(__file__).resolve().parent.parent.parent
 
@@ -66,7 +70,7 @@ def log_action(repo_root: Path, file_path: str, action: str, details: dict | Non
         log_entry.update(details)
 
     try:
-        log_file.parent.mkdir(exist_ok=True)
+        log_file.parent.mkdir(parents=True, exist_ok=True)
         with log_file.open("a") as f:
             f.write(json.dumps(log_entry) + "\n")
     except OSError:
@@ -133,7 +137,8 @@ def run():
         # Resolve path relative to repo root
         abs_path = Path(file_path_str)
         if not abs_path.is_absolute():
-            abs_path = (repo_root / file_path_str).resolve()
+            abs_path = repo_root / file_path_str
+        abs_path = abs_path.resolve()
         rel_path = abs_path.relative_to(repo_root)
     except (ValueError, OSError):
         return 0 # Fail-open if path is weird

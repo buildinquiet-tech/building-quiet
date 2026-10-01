@@ -8,7 +8,7 @@ import json
 import os
 import subprocess
 
-HOOK = os.path.join(os.path.dirname(__file__), "metricool-post-verify-pre.py")
+HOOK = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "hooks", "metricool-post-verify-pre.py")
 
 
 def run_hook(command: str, tool: str = "Bash"):
