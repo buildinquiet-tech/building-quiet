@@ -1,0 +1,9 @@
+{
+  "slug": "the-queue-kit",
+  "name": "The Queue Kit",
+  "kind": "zip",
+  "artifact": "queue-kit.zip",
+  "zip_root": "queue-kit",
+  "price": "free",
+  "gumroad": "https://buildinquiet.gumroad.com/l/the-queue-kit"
+}

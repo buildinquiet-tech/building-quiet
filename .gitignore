@@ -16,3 +16,5 @@ htmlcov/
 *.swo
 .env
 .env.local
+
+dist/

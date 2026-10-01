@@ -1,0 +1,9 @@
+{
+  "slug": "the-claudemd-starter",
+  "name": "The CLAUDE.md Starter",
+  "kind": "zip",
+  "artifact": "freebie.zip",
+  "zip_root": "freebie",
+  "price": "free",
+  "gumroad": "https://buildinquiet.gumroad.com/l/the-claudemd-starter"
+}

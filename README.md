@@ -1,12 +1,35 @@
-# Claude Code Sentinels
+# Building Quiet
 
-> **46 production hooks for Claude Code.** Discipline at the tool-call layer — economic-burn prevention, routing audit, completion-depth enforcement, anonymity-class checks, claim-source provenance.
+> The public R&D bench behind [@build.inquiet](https://instagram.com/build.inquiet). Real Claude Code hooks, skills and the free products, all in one place. Faceless. Reproducible. Free.
 
-**→ See [SKILLS.md](./SKILLS.md) for the curated stack of community-sourced skills that compose with these hooks** — the cognition layer that pairs with the discipline layer here.
+Every file here runs in a real working setup. Nothing is mocked for the camera, and this repo is the only code that ever appears on camera.
 
-These are real, battle-tested hooks pulled from an active Claude Code working environment. Every hook is invoked daily; every one of them catches a specific class of failure that costs tokens, leaks state, or breaks a discipline rule.
+| Folder | What |
+|---|---|
+| [`hooks/`](./hooks) | 47 production hooks for Claude Code. Discipline at the tool-call layer: economic-burn prevention, routing audit, completion-depth enforcement, anonymity-class checks, claim-source provenance. Reference below. |
+| [`skills/`](./skills) | SKILL.md files: `voice-dna-multi-brand` (one voice file per brand, no bleed), `auto-memory-doctrine`. |
+| [`products/`](./products) | Source for the free Gumroad downloads. Each one is built from a tagged commit by `scripts/build_product.py`, so what you download is exactly what is here. |
+| [`demos/`](./demos) | Small, self-contained examples used in videos. |
+| [`tests/`](./tests) | Tests for the more complex hooks. |
+| [`SKILLS.md`](./SKILLS.md) | Community-sourced skills that pair with these hooks. |
 
-This is the **substrate** layer. If you want a guided adoption (per-hook walkthrough, configuration kit, opinionated workflows), look at the Skill Pack project this repo seeds.
+### Free downloads
+
+| Product | Get it |
+|---|---|
+| The CLAUDE.md Starter | [gumroad](https://buildinquiet.gumroad.com/l/the-claudemd-starter) · [source](./products/the-claudemd-starter/src) |
+| The Queue Kit | [gumroad](https://buildinquiet.gumroad.com/l/the-queue-kit) · [source](./products/the-queue-kit/src) |
+| The 4-Prompt System | [gumroad](https://buildinquiet.gumroad.com/l/the-4prompt-system) |
+| The 56 Hooks (guide) | [gumroad](https://buildinquiet.gumroad.com/l/the-56-hooks) |
+
+**The Skill Pack** is the paid, pre-wired version with per-hook walkthroughs: [buildinquiet.gumroad.com/l/the-skill-pack](https://buildinquiet.gumroad.com/l/the-skill-pack). This repo is the readable starting point; you never need the paid one to use anything here.
+
+### What this is not
+
+- Not a course. A reference bench: here is the file, here is what it does.
+- Not a "look at my system" diagram. Every file is the real version.
+
+`@build.inquiet` is operator-anonymous. The system is the star.
 
 ---
 
@@ -29,10 +52,10 @@ The 47 hooks in this repo close each of those gaps at the tool-call layer — fa
 
 ```bash
 # 1. Clone into your Claude Code working tree
-git clone https://github.com/buildinquiet-tech/claude-code-sentinels.git
+git clone https://github.com/buildinquiet-tech/building-quiet.git
 
 # 2. Copy the hooks (or symlink) into your .claude/hooks/ dir
-cp claude-code-sentinels/hooks/*.py /path/to/your/project/.claude/hooks/
+cp building-quiet/hooks/*.py /path/to/your/project/.claude/hooks/
 
 # 3. Wire them into .claude/settings.json (see "Wiring" below)
 
@@ -44,7 +67,7 @@ All hooks default to **advisory** behavior — they emit `[ADVISORY]` messages t
 
 ---
 
-## Hook reference (46 production hooks)
+## Hook reference (47 production hooks)
 
 ### PreToolUse hooks (fire BEFORE Bash / Edit / Write / Agent)
 
@@ -196,11 +219,10 @@ When blocking is enabled, triggering the hook returns exit code 2 (Claude Code's
 
 ## Tests
 
-The `tests/` directory has 13 test files for the more complex hooks. Run with:
+The `tests/` directory has 13 test files for the more complex hooks. From the repo root:
 
 ```bash
-cd tests/
-python3 -m pytest -v
+python3 -m pytest -q tests
 ```
 
 Tests cover the gate logic (block vs pass), bypass paths, fail-open behavior, and fixture-based regression checks.
