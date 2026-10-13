@@ -37,6 +37,8 @@ claude --version        # 2.1.295 or later
 claude                  # ask it to run: rm -rf build   -> blocked by check-command.py
 ```
 
-Then break it on purpose: rename `check-command.py`. With `"onFailure": "block"` every Bash call is refused with `... failed; blocking because onFailure is "block"`. Delete that line and the same broken hook lets everything through.
+Then break it on purpose. Make the guard crash: add `raise RuntimeError("broken")` as its first line after the imports. Python exits 1 on a crash, and exit 1 is not a block. With `"onFailure": "block"`, per the docs, every Bash call is refused with `... failed; blocking because onFailure is "block"`. Delete that line from settings.json and the same crashing hook lets everything through. Undo the `raise` when you are done.
+
+A note on renaming the file as a break test: it does not prove anything for this hook. `python3` exits **2** when the script is missing, and 2 is the blocking code, so a renamed Python guard blocks with or without `onFailure`. A missing `node` or shell script exits with a different code and is let through. Test with a crash or a hang (a `time.sleep(30)` passes the 10 second `timeout`), not a rename.
 
 Source: [code.claude.com/docs/en/hooks](https://code.claude.com/docs/en/hooks#block-the-action-when-a-hook-fails), read 2026-10-12.
