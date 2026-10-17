@@ -1,0 +1,13 @@
+{
+  "name": "building-quiet",
+  "description": "Free Claude Code plugins from Build in Quiet.",
+  "owner": { "name": "Build in Quiet" },
+  "plugins": [
+    {
+      "name": "starter",
+      "source": "./plugins/starter",
+      "description": "Free starter for Claude Code: a CLAUDE.md template, three setup skills, and two safety guards that block when they break.",
+      "version": "1.0.0"
+    }
+  ]
+}

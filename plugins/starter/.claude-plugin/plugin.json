@@ -1,0 +1,8 @@
+{
+  "name": "starter",
+  "version": "1.0.0",
+  "description": "Free starter for Claude Code: a CLAUDE.md template, three setup skills, and two safety guards that block when they break.",
+  "author": { "name": "Build in Quiet" },
+  "homepage": "https://github.com/buildinquiet-tech/building-quiet",
+  "license": "MIT"
+}
