@@ -13,16 +13,24 @@ Every file here runs in a real working setup. Nothing is mocked for the camera, 
 | [`tests/`](./tests) | Tests for the more complex hooks. |
 | [`SKILLS.md`](./SKILLS.md) | Community-sourced skills that pair with these hooks. |
 
+### Free plugin: the Starter
+
+```bash
+claude plugin install starter --marketplace buildinquiet-tech/building-quiet
+```
+
+A CLAUDE.md template, three setup skills (`/starter:claude-md`, `/starter:done-when`, `/starter:check-setup`) and two guards that block `rm -rf`, force pushes and `.env` reads, and still block if they break. Claude Code 2.1.295+. What each one is for: [plugins/starter/WHICH-ONE-WHEN.md](./plugins/starter/WHICH-ONE-WHEN.md).
+
 ### Free downloads
 
 | Product | Get it |
 |---|---|
-| The CLAUDE.md Starter | [gumroad](https://buildinquiet.gumroad.com/l/the-claudemd-starter) · [source](./products/the-claudemd-starter/src) |
+| The CLAUDE.md Starter | [gumroad](https://buildinquiet.gumroad.com/l/the-claudemd-starter) · [plugin](./plugins/starter) |
 | The Queue Kit | [gumroad](https://buildinquiet.gumroad.com/l/the-queue-kit) · [source](./products/the-queue-kit/src) |
 | The 4-Prompt System | [gumroad](https://buildinquiet.gumroad.com/l/the-4prompt-system) |
 | The 56 Hooks (guide) | [gumroad](https://buildinquiet.gumroad.com/l/the-56-hooks) |
 
-**The Skill Pack** is the paid, pre-wired version with per-hook walkthroughs: [buildinquiet.gumroad.com/l/the-skill-pack](https://buildinquiet.gumroad.com/l/the-skill-pack). This repo is the readable starting point; you never need the paid one to use anything here.
+**The Proof Kit** ($39) is the paid plugin: `diff-review` checks Claude's own diff against your spec before it says done, plus fail-closed guards for shared checkouts and scheduled routines: [buildinquiet.gumroad.com/l/proof-kit](https://buildinquiet.gumroad.com/l/proof-kit). This repo is the readable starting point; you never need the paid one to use anything here.
 
 ### What this is not
 
