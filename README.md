@@ -13,6 +13,10 @@ Every file here runs in a real working setup. Nothing is mocked for the camera, 
 | [`tests/`](./tests) | Tests for the more complex hooks. |
 | [`SKILLS.md`](./SKILLS.md) | Community-sourced skills that pair with these hooks. |
 
+### Free list: 5 Claude Code plugins to install first
+
+Four from Anthropic's official marketplace, one from Addy Osmani, every install line included: [lists/5-free-claude-code-plugins.md](./lists/5-free-claude-code-plugins.md).
+
 ### Free plugin: the Starter
 
 ```bash
