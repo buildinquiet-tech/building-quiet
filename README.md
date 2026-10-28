@@ -17,6 +17,10 @@ Every file here runs in a real working setup. Nothing is mocked for the camera, 
 
 Four from Anthropic's official marketplace, one from Addy Osmani, every install line included: [lists/5-free-claude-code-plugins.md](./lists/5-free-claude-code-plugins.md).
 
+### Free list: Claude Code subagents, one page per job
+
+Four example agent pages (hook-finder, script-writer, reviewer, cutter) with the docs behind each field: [lists/claude-code-subagent-pipeline.md](./lists/claude-code-subagent-pipeline.md).
+
 ### Free plugin: the Starter
 
 ```bash
