@@ -11,6 +11,7 @@ Every file here runs in a real working setup. Nothing is mocked for the camera, 
 | [`products/`](./products) | Source for the free Gumroad downloads. Each one is built from a tagged commit by `scripts/build_product.py`, so what you download is exactly what is here. |
 | [`demos/`](./demos) | Small, self-contained examples used in videos. |
 | [`tests/`](./tests) | Tests for the more complex hooks. |
+| [`tools/`](./tools) | `rules_audit.py`: what Claude Code loads before you type, and what makes rules slip. |
 | [`SKILLS.md`](./SKILLS.md) | Community-sourced skills that pair with these hooks. |
 
 ### Free list: 5 Claude Code plugins to install first
@@ -20,6 +21,16 @@ Four from Anthropic's official marketplace, one from Addy Osmani, every install 
 ### Free list: Claude Code subagents, one page per job
 
 Four example agent pages (hook-finder, script-writer, reviewer, cutter) with the docs behind each field: [lists/claude-code-subagent-pipeline.md](./lists/claude-code-subagent-pipeline.md).
+
+### Free tool: Rules Audit
+
+```bash
+python3 tools/rules_audit.py /path/to/your/project
+```
+
+Lists every instruction file Claude Code loads before you type a word, with its size, line count and a token estimate. It flags four things that make rules stop holding: a loaded file over 200 lines, a MEMORY.md past its load limit, an `@import` that points nowhere, and the same rule written in two loaded files. Read-only, standard library only. `--selfcheck` runs its 18 tests. The load rules come from the [memory docs](https://code.claude.com/docs/en/memory).
+
+Next step, if you want it: the Proof Kit adds guards that block instead of warn. $39: [buildinquiet.gumroad.com/l/proof-kit](https://buildinquiet.gumroad.com/l/proof-kit)
 
 ### Free plugin: the Starter
 
