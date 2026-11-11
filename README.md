@@ -24,6 +24,8 @@ Four example agent pages (hook-finder, script-writer, reviewer, cutter) with the
 
 Which model for which job, as a three-row table with a subagent page: [lists/which-model-for-which-job.md](./lists/which-model-for-which-job.md).
 
+Running several sessions at once without collisions: [lists/run-parallel-sessions-without-collisions.md](./lists/run-parallel-sessions-without-collisions.md).
+
 ### Free tool: Rules Audit
 
 ```bash
