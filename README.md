@@ -22,6 +22,8 @@ Four from Anthropic's official marketplace, one from Addy Osmani, every install 
 
 Four example agent pages (hook-finder, script-writer, reviewer, cutter) with the docs behind each field: [lists/claude-code-subagent-pipeline.md](./lists/claude-code-subagent-pipeline.md).
 
+Which model for which job, as a three-row table with a subagent page: [lists/which-model-for-which-job.md](./lists/which-model-for-which-job.md).
+
 ### Free tool: Rules Audit
 
 ```bash
