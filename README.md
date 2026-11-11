@@ -28,7 +28,7 @@ Four example agent pages (hook-finder, script-writer, reviewer, cutter) with the
 python3 tools/rules_audit.py /path/to/your/project
 ```
 
-Lists every instruction file Claude Code loads before you type a word, with its size, line count and a token estimate. It flags four things that make rules stop holding: a loaded file over 200 lines, a MEMORY.md past its load limit, an `@import` that points nowhere, and the same rule written in two loaded files. Read-only, standard library only. `--selfcheck` runs its 18 tests. The load rules come from the [memory docs](https://code.claude.com/docs/en/memory).
+Lists every instruction file Claude Code loads before you type a word, with its size, line count and a token estimate. It flags four things that make rules stop holding: a loaded file over 200 lines, a MEMORY.md past its load limit, an `@import` that points nowhere, and the same rule written in two loaded files. It also reads your permission settings and flags the gaps that matter when Claude runs unattended: an allow rule that lets every shell command run, an allow list with no deny rules, and no deny rule for `.env` or secrets files. Read-only, standard library only. `--selfcheck` runs its 26 tests. The load rules come from the [memory docs](https://code.claude.com/docs/en/memory).
 
 Next step, if you want it: the Proof Kit adds guards that block instead of warn. $39: [buildinquiet.gumroad.com/l/proof-kit](https://buildinquiet.gumroad.com/l/proof-kit)
 

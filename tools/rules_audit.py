@@ -9,6 +9,15 @@ with its size, and flags the four things that make rules stop holding:
   DEAD       an @import that points at a file that is not there
   DUPLICATE  the same rule line in two or more loaded files (they drift apart)
 
+and, for unattended runs, reads the permission settings (~/.claude/settings.json,
+.claude/settings.json, .claude/settings.local.json) and flags:
+
+  BROADALLOW an allow rule that lets every shell command run (Bash, Bash(*)), or a
+             bypassPermissions default mode: the deny list is the only brake left
+  NODENY     an allow list with no deny rules at all
+  NOENVDENY  no deny rule that keeps Claude from reading .env or secrets files
+  BADJSON    a settings file that does not parse, so none of its rules apply
+
 Load rules follow https://code.claude.com/docs/en/memory (read 2026-11-11):
 CLAUDE.md and CLAUDE.local.md from the project folder and every folder above it,
 ~/.claude/CLAUDE.md, every .claude/rules/*.md without a `paths:` field, and every
@@ -98,6 +107,43 @@ def rule_lines(text: str) -> set[str]:
         s = re.sub(r"\s+", " ", s).lower()
         if len(s) >= MIN_RULE_CHARS:
             out.add(s)
+    return out
+
+
+def permission_flags(project: Path, home: Path) -> list[dict]:
+    """Read the permission rules in the settings files and flag the gaps that matter unattended."""
+    files = [home / ".claude" / "settings.json", project / ".claude" / "settings.json",
+             project / ".claude" / "settings.local.json"]
+    allow: list[str] = []
+    deny: list[str] = []
+    out: list[dict] = []
+    bypass = False
+    for f in files:
+        if not f.is_file():
+            continue
+        try:
+            data = json.loads(read(f))
+        except ValueError:
+            out.append({"flag": "BADJSON", "file": str(f), "detail": "does not parse, none of its rules apply"})
+            continue
+        perms = data.get("permissions") if isinstance(data, dict) else None
+        perms = perms if isinstance(perms, dict) else {}
+        allow += [r for r in perms.get("allow", []) if isinstance(r, str)]
+        deny += [r for r in perms.get("deny", []) if isinstance(r, str)]
+        if perms.get("defaultMode") == "bypassPermissions" or data.get("skipDangerousModePermissionPrompt"):
+            bypass = True
+    broad = [r for r in allow if r.strip() in ("Bash", "Bash(*)", "Bash(**)")]
+    if broad or bypass:
+        out.append({"flag": "BROADALLOW", "file": "settings",
+                    "detail": ("allow rule " + broad[0] if broad else "bypassPermissions mode")
+                              + " lets every command run; the deny list is the only brake"})
+    if (allow or bypass) and not deny:
+        out.append({"flag": "NODENY", "file": "settings",
+                    "detail": f"{len(allow)} allow rule(s) and no deny rules"})
+    if (allow or bypass) and not any(re.search(r"\.env|secret|credential", r, re.I) and r.startswith(("Read", "Edit", "Write"))
+                                      for r in deny):
+        out.append({"flag": "NOENVDENY", "file": "settings",
+                    "detail": "no deny rule for .env or secrets files, e.g. Read(./.env)"})
     return out
 
 
@@ -194,6 +240,8 @@ def audit(project: Path, home: Path, memory: Path | None = None) -> dict:
         if len(files) > 1:
             flags.append({"flag": "DUPLICATE", "file": " + ".join(sorted(files)),
                           "detail": line[:110]})
+
+    flags += permission_flags(project, home)
 
     def short(text: str) -> str:
         """Show paths relative to the project where they sit inside it."""
@@ -303,7 +351,37 @@ def selfcheck() -> int:
         check("import five hops down is not loaded and is flagged",
               "e.md" not in n2 and any("hop" in f["detail"] for f in r2["flags"]))
 
-    print(f"\n{'PASS' if not fails else 'FAIL'}: {18 - len(fails)} of 18")
+    with tempfile.TemporaryDirectory() as tmp:
+        root = Path(tmp)
+        home = root / "home"
+        (home / ".claude").mkdir(parents=True)
+        proj = root / "p"
+        (proj / ".claude").mkdir(parents=True)
+
+        def kinds_for(settings, local=None) -> list[str]:
+            (proj / ".claude" / "settings.json").write_text(settings)
+            lf = proj / ".claude" / "settings.local.json"
+            if local is None and lf.exists():
+                lf.unlink()
+            elif local is not None:
+                lf.write_text(local)
+            return [f["flag"] for f in audit(proj, home)["flags"]]
+
+        check("no settings files: no permission flags", kinds_for("{}") == [])
+        k = kinds_for('{"permissions":{"allow":["Bash(npm test)"]}}')
+        check("allow list with no deny is flagged NODENY and NOENVDENY", "NODENY" in k and "NOENVDENY" in k)
+        check("narrow allow is not BROADALLOW", "BROADALLOW" not in k)
+        check("Bash(*) is flagged BROADALLOW", "BROADALLOW" in kinds_for('{"permissions":{"allow":["Bash(*)"]}}'))
+        check("bypassPermissions is flagged BROADALLOW",
+              "BROADALLOW" in kinds_for('{"permissions":{"defaultMode":"bypassPermissions","deny":["Read(./.env)"]}}'))
+        check("deny for .env clears NOENVDENY and NODENY",
+              kinds_for('{"permissions":{"allow":["Bash(npm test)"],"deny":["Read(./.env)"]}}') == [])
+        check("deny in settings.local.json counts",
+              kinds_for('{"permissions":{"allow":["Bash(ls)"]}}', '{"permissions":{"deny":["Read(./secrets/**)"]}}') == [])
+        check("broken settings file is flagged BADJSON", "BADJSON" in kinds_for("{nope"))
+
+    total = 26
+    print(f"\n{'PASS' if not fails else 'FAIL'}: {total - len(fails)} of {total}")
     return 1 if fails else 0
 
 
