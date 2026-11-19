@@ -16,24 +16,24 @@ CLAUDE.md is a file that lives in your project folder. Claude Code reads it at t
 
 **Step 2:** Create a file called `CLAUDE.md` in the root of your project. Paste the entire contents of the starter template into it.
 
-**Step 3:** Customize the 5 fields (see below). Save the file. Start a new Claude Code session. Done.
+**Step 3:** Save the file. Start a new Claude Code session. Done. It works as written, and you can make it yours with the 5 edits below.
 
-### The 5 Fields to Customize
+### The 5 Edits to Make It Yours
 
-**1. Brand Name**
-Replace every `[YOUR BRAND]` with your actual brand or project name. This is how Claude refers to your work.
+**1. Project Name**
+Add one sentence at the top naming your project and who it serves. This is how Claude refers to your work.
 
-**2. Role Description**
-Tell Claude what it does for you. "Content manager" makes it focus on writing and scheduling. "Code partner" makes it focus on building. "Business operator" makes it do everything. Be specific.
+**2. Role**
+Change "the assistant for this project" to what you want Claude to be. "Content manager" focuses on writing and scheduling. "Code partner" focuses on building. Be specific.
 
-**3. Content Paths**
-Define 3 types of people you create for. Claude uses these to match tone and content to your audience. Example: "Beginners who want to learn" vs. "Builders who want tools" vs. "Experts who want architecture."
+**3. Audience**
+Replace the default reader with the real people you create for. Example: "Beginners who want to learn" vs. "Builders who want tools" vs. "Experts who want architecture."
 
-**4. Quality Rules**
-List words you never want in your content (hype words, filler, cliches). List elements every piece must have (a CTA, a disclosure, a specific format). Claude checks these before anything goes out.
+**4. Quality Check**
+Swap in your own banned words (hype, filler, cliches) and the elements every piece must have (a CTA, a disclosure, a specific format). Claude checks these before anything goes out.
 
 **5. Protected Files**
-List files Claude should never edit without asking first. Your config files, credentials, anything sensitive. Everything else stays open.
+Add files Claude should ask about before editing: config files, credentials, anything sensitive. Everything else stays open.
 
 ---
 
